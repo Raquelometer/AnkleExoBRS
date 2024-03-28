@@ -1,4 +1,4 @@
-function [TS_array] = generateExoTargetSets(model,alphaRTD, alphaMT, muGrav, motor_lim)
+function [TS_array, theta_lb, theta_ub] = generateExoTargetSets(model,alphaRTD, alphaMT, muGrav, motor_lim)
 %"generateExoTargetSets" Function to compute box-shaped target sets
 %
 %   Function takes in a model that includes mass, height, and bounds on RTD
@@ -251,7 +251,8 @@ while max(abs(verticesIntersection - ellipseBoxVerts),[], 'all') > target_tol
     [A_ts, b_ts] = vert2lcon(ellipseBoxVerts);
     verticesIntersection = lcon2vert([A_con; A_ts],[b_con; b_ts]);
 end
-
+theta_lb = theta_lb + pi/2;
+theta_ub = theta_ub + pi/2;
 TS_array = [TS_array (ellipseBoxVerts - current_eq')];
 
 end
