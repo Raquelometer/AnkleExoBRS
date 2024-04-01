@@ -77,9 +77,9 @@ theta_ub = min(theta_ub, theta_max - (pi/2));
 %% Set up 3d Plots
 if plotting
 
-    x1 = linspace(-1,1, 320);
-    x2 = linspace(-1,1,320);
-    x3 = linspace(-70,50,600);
+    x1 = linspace(-1,1, 300);
+    x2 = linspace(-1,1,300);
+    x3 = linspace(-80,50,500);
     
     [X1, X2, X3] = meshgrid(x1, x2, x3);
 end
@@ -124,7 +124,7 @@ R = chol(P);
 
 %% Find level
 sway_velocity = 0.01;
-
+tau_sway = 20;
 % Construct constraint polytope 
 A_con = [K; -K; 1 0 0; -1 0 0; 0 1 0;0 -1 0;0 0 1;0 0 -1];
 b_con = [uMax; -uMin; theta_ub; -theta_lb; sway_velocity; sway_velocity; tau_max; -tau_min;]
@@ -139,13 +139,13 @@ level_candidate = computeLevelCandidate(A_con, b_con, Qval, R, current_eq)
 
 % convert to vertices
 ellipseBoxVerts = boxVerts3d(axes_max, current_eq);
-% figure(3)
-% hold on 
-% scatter3(verts(:,1), verts(:,2),verts(:,3), 50, 'red', 'filled');
-% 
-% scatter3(ellipseBoxVerts(:,1), ellipseBoxVerts(:,2),ellipseBoxVerts(:,3), 50, 'green', 'filled');
-% 
-% hold off
+figure(2)
+hold on 
+scatter3(verts(:,1), verts(:,2),verts(:,3), 50, 'red', 'filled');
+
+scatter3(ellipseBoxVerts(:,1), ellipseBoxVerts(:,2),ellipseBoxVerts(:,3), 50, 'green', 'filled');
+
+hold off
 
 % convert vertices to linear constraints using vert2lcon
 [A_ts, b_ts] = vert2lcon(ellipseBoxVerts);
