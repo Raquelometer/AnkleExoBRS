@@ -1,4 +1,4 @@
-function [TS_array, theta_lb, theta_ub] = generateExoTargetSets(model,alphaRTD, alphaMT, muGrav, motor_lim)
+function [TS_array, theta_lb, theta_ub] = generateExoTargetSets(model,modelLabel,alphaRTD, alphaMT, muGrav, motor_lim)
 %"generateExoTargetSets" Function to compute box-shaped target sets
 %
 %   Function takes in a model that includes mass, height, and bounds on RTD
@@ -9,6 +9,7 @@ function [TS_array, theta_lb, theta_ub] = generateExoTargetSets(model,alphaRTD, 
 %   Function output is an 8x2 array of box coordinates centered at the
 %   ankle and toe equilibrium points.
 plotting = true;
+saveData = true;
 load(model);
 m = model.m;
 h = model.h;
@@ -26,9 +27,11 @@ tau_max = model.tauMax*alphaMT;
 if muGrav ~= 0
     Kp = 0;
     Kd = 0;
+    exoLabel = 'gcExo'
 else
     Kp = m*g*l;
     Kd = 0.3*sqrt(m*l*l*Kp);
+    exoLabel = 'PDExo';
 end
 
 
@@ -71,9 +74,9 @@ xlim([-0.2 .3]);
 ylim([-150 50]);
 hold off
 
-%% Adjust theta_lb and ub if there is enough torque
-theta_lb = max(theta_lb, theta_min - (pi/2));
-theta_ub = min(theta_ub, theta_max - (pi/2));
+% %% Adjust theta_lb and ub if there is enough torque
+% theta_lb = max(theta_lb, theta_min - (pi/2));
+% theta_ub = min(theta_ub, theta_max - (pi/2));
 %% Set up 3d Plots
 if plotting
 
@@ -297,5 +300,37 @@ end
 theta_lb = theta_lb + pi/2;
 theta_ub = theta_ub + pi/2;
 TS_array = [TS_array (ellipseBoxVerts - current_eq')];
+
+%% Save TS bounds
+targetSets.thetaAnkRange = abs(TS_array(1,1));
+targetSets.thetaToeRange = abs(TS_array(1,4));
+targetSets.thetaDotAnkRange = abs(TS_array(1,2));
+targetSets.thetaDotToeRange = abs(TS_array(1,5));
+targetSets.torqueAnkRange = abs(TS_array(1,3));
+targetSets.torqueToeRange = abs(TS_array(1,6));
+
+%% Pack Target set and corresponding problem parameters
+if saveData
+
+    % targetSets, exoParams, alphaMT, alphaRTD
+    problemParams.targetSets = targetSets;
+    problemParams.thetaLb = theta_lb;
+    problemParams.thetaUb = theta_ub;
+    
+    % exo params
+    exoParams.Kp = Kp;
+    exoParams.Kd = Kd;
+    exoParams.muGrav = muGrav;
+    exoParams.motorLim = motor_lim;
+
+    problemParams.exoParams = exoParams;
+    
+    % Scaling params
+    problemParams.alphaMT = alphaMT;
+    problemParams.alphRTD = alphaRTD;
+    % Params_YF_noExo_alphaMT_1_alphaRTD_1
+    filename = strcat('Params_', modelLabel,'_',exoLabel,'_', num2str(alphaMT*100),'_pctMT_', num2str(alphaRTD*100),'_pctRTD', '.mat')
+    save(filename, "problemParams");
+end
 
 end
