@@ -327,7 +327,7 @@ if saveData
     
     % Scaling params
     problemParams.alphaMT = alphaMT;
-    problemParams.alphRTD = alphaRTD;
+    problemParams.alphaRTD = alphaRTD;
     % Params_YF_noExo_alphaMT_1_alphaRTD_1
     filename = strcat('Params_', modelLabel,'_',exoLabel,'_', num2str(alphaMT*100),'_pctMT_', num2str(alphaRTD*100),'_pctRTD', '.mat')
     save(filename, "problemParams");

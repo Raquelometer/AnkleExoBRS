@@ -64,10 +64,14 @@ theta_lb = max(theta_lb, theta_heel - (pi/2));
 theta_ub = min(theta_ub, theta_toe - (pi/2));
 
 %% Pack eq points
-eq_angles = [0; theta_ub - 0.03;] % ankle and toe equilibria
+toeEqAngle = theta_ub - 0.03;
+% eq_points = [0 + (pi/2) theta_ub - 0.03 + (pi/2); 0 0; -m*g*l*cos(eq_angle) -m*g*l*cos(eq_angle);] % ankle and toe equilibria
+targetSets.ankleEq = [0 + (pi/2); 0 ; 0];
 
+targetSets.toeEq = [toeEqAngle + (pi/2); 0; m*g*l*cos(toeEqAngle + (pi/2))]
+eq_angles = [0, toeEqAngle]
 TS_array = zeros(8, 3*length(eq_angles));
-
+Kx_array = zeros(2,3);
 %% Set up 3d Plots
 if plotting
 
@@ -80,7 +84,7 @@ end
 %% Compute Target sets for each eq point
 for i = 1:length(eq_angles)
 eq_angle = eq_angles(i);
-targetSets.theta_toe_eq = eq_angle + pi/2;
+
 current_eq = [eq_angle, 0, -m*g*l*sin(eq_angle)]';
 
 % Linearized system without exo
@@ -116,8 +120,7 @@ if diagnostics.problem == 0
     K = Yval*P;
     
 end
-targetSets.K_heel = K;
-
+Kx_array(i,:) = K;
 R = chol(P);
 %% Construct constraint polytope
 
@@ -239,7 +242,10 @@ if saveData
     
     % Scaling params
     problemParams.alphaMT = alphaMT;
-    problemParams.alphRTD = alphaRTD;
+    problemParams.alphaRTD = alphaRTD;
+
+    % CLF controllers
+    problemParams.Kx_gains = Kx_array;
     % Params_YF_noExo_alphaMT_1_alphaRTD_1
     filename = strcat('Params_', modelLabel,'_','noExo_', num2str(alphaMT*100),'_pctMT_', num2str(alphaRTD*100),'_pctRTD', '.mat')
     save(filename, "problemParams");
