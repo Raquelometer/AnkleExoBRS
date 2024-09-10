@@ -83,6 +83,7 @@ toeEqAngle = theta_ub - 0.03;
 % eq_points = [0 + (pi/2) theta_ub - 0.03 + (pi/2); 0 0; -m*g*l*cos(eq_angle) -m*g*l*cos(eq_angle);] % ankle and toe equilibria
 targetSets.ankleEq = [0 + (pi/2); 0 ; 0];
 
+targetSets.toeEq = [ + (pi/2); 0; m*g*l*cos(toeEqAngle + (pi/2))]
 
 %eq_angles = [0, toeEqAngle]
 %TS_array = zeros(8, 3*length(eq_angles));
@@ -210,7 +211,6 @@ end
 eq_angle = theta_ub(1)-0.03;
 
 current_eq = [eq_angle, 0, -m*g*l*sin(eq_angle) + motor_lim]';
-targetSets.toeEq = [eq_angle + (pi/2); 0; m*g*l*cos(eq_angle + (pi/2)) + motor_lim];
 
 % Linearized system with saturated exo
 n = 3;
