@@ -1,9 +1,9 @@
-function [g, data, tau2] = computeAnkleExoBRS()
+function [g, data, tau2] = computeAnkleExoBRSwithExo()
 %% Function to compute baseline backward reachable sets (without exoskeleton)
 
 %% Load files
-model = 'AnkleExoBRS/Models/YF_model.mat'
-problemParams = 'AnkleExoBRS/TargetSets/computedSets/Params_YF_noExo_80_pctMT_100_pctRTD.mat'
+model = 'AnkleExoBRS/Models/OM_model.mat'
+problemParams = 'AnkleExoBRS/Params_OM_gcExo_100_pctMT_100_pctRTD.mat'
 
 load(model)
 load(problemParams)
@@ -13,9 +13,9 @@ x0 = [pi/2, 0, 0];
 dPend = LiftedInvPendExo(x0, model, problemParams)
 
 %% grid
-N = [225; 225; 275];         % Number of grid points per dimension
+N = [225; 225; 225];         % Number of grid points per dimension
 
-% Partial grid for computing forward velocity portion
+% Partial grid if forward velocity
 % grid_min = [0.65, -0.02*dPend.vscale, dPend.torqueMin*dPend.tauscale]; % Lower corner of computation domain
 % grid_max = [1.8; 2.85*dPend.vscale; dPend.torqueMax*dPend.tauscale];    % Upper corner of computation domain
 
@@ -23,7 +23,9 @@ N = [225; 225; 275];         % Number of grid points per dimension
 grid_min = [1.51, -2.85*dPend.vscale, dPend.torqueMin*dPend.tauscale]; % Lower corner of computation domain
 grid_max = [2.56; 0.02*dPend.vscale; dPend.torqueMax*dPend.tauscale];    % Upper corner of computation domain
 
-% Uncomment for full grid to see constraints. Will not compute accurate BRS
+% TODO add exo grid
+
+% Uncomment for full grid
 % grid_min = [0.65, -2.85*dPend.vscale, dPend.torqueMin*dPend.tauscale]; % Lower corner of computation domain
 % grid_max = [2.56; 2.85*dPend.vscale; dPend.torqueMax*dPend.tauscale];  
 
@@ -39,22 +41,22 @@ tau = t0:dt:tMax;
 
 TS = problemParams.targetSets;
 
-data0 = shapeRectangleByCorners(g,[TS.ankleEq(1)- TS.thetaAnkRange; -0.01*dPend.vscale; -TS.torqueAnkRange*dPend.tauscale],[TS.ankleEq(1) + TS.thetaAnkRange; 0.01*dPend.vscale; TS.torqueAnkRange*dPend.tauscale]);
+% TODO can't assume exo is included!!!, add scaling condition
+data0 = shapeRectangleByCorners(g,[TS.ankleEq(1)- TS.thetaAnkRange; -0.01*dPend.vscale; -1*dPend.tauscale],[TS.ankleEq(1) + TS.thetaAnkRange; 0.01*dPend.vscale; 1*dPend.tauscale]);
 data1 = shapeRectangleByCorners(g,[TS.toeEq(1) - TS.thetaToeRange; -0.01*dPend.vscale; (TS.toeEq(3) - TS.torqueToeRange)*dPend.tauscale],[TS.toeEq(1) + TS.thetaToeRange; 0.01*dPend.vscale; (TS.toeEq(3) + TS.torqueToeRange)*dPend.tauscale]);
 
 data0 = shapeUnion(data0,data1);
 
-%% Constraints
+% Constraints
+% constraintMat = generateLiftedInvPendExoCoPConstraint(g.vs, g.shape, dPend);
 CoPConstraintMat = generateLiftedInvPendExoCoPConstraint(g.vs, g.shape, dPend);
 GRFConstraintMat = generateLiftedInvPendExoGRFConstraint(g.vs, g.shape, dPend);
-
 constraintMat = min(CoPConstraintMat,GRFConstraintMat);
 
 % Friction
 mu = 1; % coefficient of static friction
 FrictionConstraintMat = generateLiftedInvPendFrictionConstraint(g.vs, g.shape, dPend, mu);
 constraintMat = min(constraintMat,FrictionConstraintMat);
-
 %% HJB Solver Params
 
 % Put grid and dynamic systems into schemeData
