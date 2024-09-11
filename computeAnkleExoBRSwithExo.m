@@ -48,8 +48,15 @@ data1 = shapeRectangleByCorners(g,[TS.toeEq(1) - TS.thetaToeRange; -0.01*dPend.v
 data0 = shapeUnion(data0,data1);
 
 % Constraints
-constraintMat = generateLiftedInvPendExoCoPConstraint(g.vs, g.shape, dPend);
+% constraintMat = generateLiftedInvPendExoCoPConstraint(g.vs, g.shape, dPend);
+CoPConstraintMat = generateLiftedInvPendExoCoPConstraint(g.vs, g.shape, dPend);
+GRFConstraintMat = generateLiftedInvPendExoGRFConstraint(g.vs, g.shape, dPend);
+constraintMat = min(CoPConstraintMat,GRFConstraintMat);
 
+% Friction
+mu = 1; % coefficient of static friction
+FrictionConstraintMat = generateLiftedInvPendFrictionConstraint(g.vs, g.shape, dPend, mu);
+constraintMat = min(constraintMat,FrictionConstraintMat);
 %% HJB Solver Params
 
 % Put grid and dynamic systems into schemeData
