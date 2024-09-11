@@ -13,5 +13,10 @@ toolbox](https://www.mathworks.com/matlabcentral/fileexchange/30892-analyze-n-di
 Precomputed target sets for all of the scenarios in the paper are saved in the TargetSets directory. Models are in the Models directory.
    1. Download and install the HJB toolbox
    2. Move the `Dynamics/LiftedInvPendExo` directory into the dynsys directory that comes with the toolbox
-   3. Make sure the functions in `Dynamics/Constraints` and in Models/ModelUtils are added to your path.
-   4. The computeNominalBRS.mat and computeAnkleExoBRS.mat scripts will compute the BRS. Select the model you want (i.e. young male = YM_model.mat) and the desired problem parameters. 
+   3. Make sure the functions in `Dynamics/Constraints` and in `Models/ModelUtils` are added to your path.
+   4. The `computeNominalBRS.mat` and `computeAnkleExoBRS.mat `scripts will compute the BRS. 
+ Within the scripts, load the files corresponding to the model you want and the desired problem parameters. 
+  
+For example for a Young Male with full strength, load `/Models/YM_model.mat` and problem parameter file `TargetSets/computedSets/Params_YM_noExo_100_pctMT_100_pctRTD.mat`.
+
+You should also make sure to uncomment the grid portion for the forward or backward velocity grid, depending on which portion of the BRS you want to compute.
